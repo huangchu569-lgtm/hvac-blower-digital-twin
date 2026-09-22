@@ -1,0 +1,566 @@
+[
+    {
+        "id": "6c3aebd160ce2af5",
+        "type": "tab",
+        "label": "MQTT Sensor Data",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "00ad5ea394b9c077",
+        "type": "tab",
+        "label": "MQTT Alert Test",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "e5af4df9f7d80cca",
+        "type": "mqtt-broker",
+        "name": "",
+        "broker": "$(MQTT_BROKER_HOST)",
+        "port": "$(MQTT_BROKER_PORT)",
+        "clientid": "",
+        "autoConnect": true,
+        "usetls": false,
+        "protocolVersion": 4,
+        "keepalive": 60,
+        "cleansession": true,
+        "autoUnsubscribe": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthRetain": "false",
+        "birthPayload": "",
+        "birthMsg": {},
+        "closeTopic": "",
+        "closeQos": "0",
+        "closeRetain": "false",
+        "closePayload": "",
+        "closeMsg": {},
+        "willTopic": "",
+        "willQos": "0",
+        "willRetain": "false",
+        "willPayload": "",
+        "willMsg": {},
+        "userProps": "",
+        "sessionExpiry": ""
+    },
+    {
+        "id": "1c80c48f7f2b5364",
+        "type": "ui_base",
+        "theme": {
+            "name": "theme-dark",
+            "lightTheme": {
+                "default": "#0094CE",
+                "baseColor": "#0094CE",
+                "baseFont": "-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif",
+                "edited": true,
+                "reset": false
+            },
+            "darkTheme": {
+                "default": "#097479",
+                "baseColor": "#097479",
+                "baseFont": "-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif",
+                "edited": true,
+                "reset": false
+            },
+            "customTheme": {
+                "name": "Untitled Theme 1",
+                "default": "#4B7930",
+                "baseColor": "#4B7930",
+                "baseFont": "-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif"
+            },
+            "themeState": {
+                "base-color": {
+                    "default": "#097479",
+                    "value": "#097479",
+                    "edited": false
+                },
+                "page-titlebar-backgroundColor": {
+                    "value": "#097479",
+                    "edited": false
+                },
+                "page-backgroundColor": {
+                    "value": "#111111",
+                    "edited": false
+                },
+                "page-sidebar-backgroundColor": {
+                    "value": "#333333",
+                    "edited": false
+                },
+                "group-textColor": {
+                    "value": "#0eb8c0",
+                    "edited": false
+                },
+                "group-borderColor": {
+                    "value": "#555555",
+                    "edited": false
+                },
+                "group-backgroundColor": {
+                    "value": "#333333",
+                    "edited": false
+                },
+                "widget-textColor": {
+                    "value": "#eeeeee",
+                    "edited": false
+                },
+                "widget-backgroundColor": {
+                    "value": "#097479",
+                    "edited": false
+                },
+                "widget-borderColor": {
+                    "value": "#333333",
+                    "edited": false
+                },
+                "base-font": {
+                    "value": "-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif"
+                }
+            },
+            "angularTheme": {
+                "primary": "indigo",
+                "accents": "blue",
+                "warn": "red",
+                "background": "grey",
+                "palette": "light"
+            }
+        },
+        "site": {
+            "name": "HVAC Blower Fan Predictive Maintenance System",
+            "hideToolbar": "false",
+            "allowSwipe": "false",
+            "lockMenu": "false",
+            "allowTempTheme": "true",
+            "dateFormat": "DD/MM/YYYY",
+            "sizes": {
+                "sx": 48,
+                "sy": 48,
+                "gx": 6,
+                "gy": 6,
+                "cx": 6,
+                "cy": 6,
+                "px": 0,
+                "py": 0
+            }
+        }
+    },
+    {
+        "id": "e4e3310e72889f23",
+        "type": "ui_tab",
+        "name": "HVAC Monitoring Dashboard",
+        "icon": "dashboard",
+        "order": 2,
+        "disabled": false,
+        "hidden": false
+    },
+    {
+        "id": "a981c80528fe9e84",
+        "type": "ui_group",
+        "name": "Fan Performance",
+        "tab": "e4e3310e72889f23",
+        "order": 1,
+        "disp": true,
+        "width": 6,
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "6ac62dc140462e8a",
+        "type": "ui_group",
+        "name": "AI Health Status",
+        "tab": "e4e3310e72889f23",
+        "order": 2,
+        "disp": true,
+        "width": 6,
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "3769e4d58b121aae",
+        "type": "mqtt in",
+        "z": "6c3aebd160ce2af5",
+        "name": "",
+        "topic": "sensors/group20/hvac-blower/data",
+        "qos": "2",
+        "datatype": "auto-detect",
+        "broker": "e5af4df9f7d80cca",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 180,
+        "y": 320,
+        "wires": [
+            [
+                "937191c94f124145"
+            ]
+        ]
+    },
+    {
+        "id": "52bc0e5e6492236c",
+        "type": "function",
+        "z": "6c3aebd160ce2af5",
+        "name": "extract_data",
+        "func": "let data = msg.payload;\n\nif (data.current !== undefined) {\n    msg.payload = data.current;\n    return msg;\n}\n\nreturn null;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 650,
+        "y": 320,
+        "wires": [
+            [
+                "f29e172970af6b7b",
+                "6f9c62b40b3fc349",
+                "0ecfafb1c76626d0"
+            ]
+        ]
+    },
+    {
+        "id": "937191c94f124145",
+        "type": "json",
+        "z": "6c3aebd160ce2af5",
+        "name": "",
+        "property": "payload",
+        "action": "obj",
+        "pretty": false,
+        "x": 410,
+        "y": 320,
+        "wires": [
+            [
+                "52bc0e5e6492236c",
+                "4e4ef5c114d9a231",
+                "0cf6ba6040f94f6e"
+            ]
+        ]
+    },
+    {
+        "id": "4e4ef5c114d9a231",
+        "type": "debug",
+        "z": "6c3aebd160ce2af5",
+        "name": "debug 1",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 600,
+        "y": 540,
+        "wires": []
+    },
+    {
+        "id": "0ecfafb1c76626d0",
+        "type": "debug",
+        "z": "6c3aebd160ce2af5",
+        "name": "debug 2",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 920,
+        "y": 420,
+        "wires": []
+    },
+    {
+        "id": "54a1ebfaa6dfbeb4",
+        "type": "ui_text",
+        "z": "6c3aebd160ce2af5",
+        "group": "a981c80528fe9e84",
+        "order": 3,
+        "width": "3",
+        "height": "4",
+        "name": "Moving Average",
+        "label": "Moving Average ",
+        "format": "{{msg.payload}} A",
+        "layout": "col-center",
+        "className": "",
+        "style": false,
+        "font": "",
+        "fontSize": 16,
+        "color": "#000000",
+        "x": 920,
+        "y": 480,
+        "wires": []
+    },
+    {
+        "id": "6f9c62b40b3fc349",
+        "type": "ui_gauge",
+        "z": "6c3aebd160ce2af5",
+        "name": "",
+        "group": "a981c80528fe9e84",
+        "order": 2,
+        "width": "3",
+        "height": "4",
+        "gtype": "gage",
+        "title": "Fan Current (Amps)",
+        "label": "units",
+        "format": "{{value}}",
+        "min": 0,
+        "max": "6",
+        "colors": [
+            "#00b500",
+            "#e6e600",
+            "#ca3838"
+        ],
+        "seg1": "3.5",
+        "seg2": "4.2",
+        "diff": false,
+        "className": "",
+        "x": 920,
+        "y": 260,
+        "wires": []
+    },
+    {
+        "id": "f29e172970af6b7b",
+        "type": "ui_chart",
+        "z": "6c3aebd160ce2af5",
+        "name": "",
+        "group": "a981c80528fe9e84",
+        "order": 1,
+        "width": "6",
+        "height": "5",
+        "label": "Fan Current Over Time",
+        "chartType": "line",
+        "legend": "false",
+        "xformat": "HH:mm:ss",
+        "interpolate": "linear",
+        "nodata": "",
+        "dot": false,
+        "ymin": "",
+        "ymax": "",
+        "removeOlder": 1,
+        "removeOlderPoints": "",
+        "removeOlderUnit": "3600",
+        "cutout": 0,
+        "useOneColor": false,
+        "useUTC": false,
+        "colors": [
+            "#1f77b4",
+            "#aec7e8",
+            "#ff7f0e",
+            "#2ca02c",
+            "#98df8a",
+            "#d62728",
+            "#ff9896",
+            "#9467bd",
+            "#c5b0d5"
+        ],
+        "outputs": 1,
+        "useDifferentColor": false,
+        "className": "",
+        "x": 900,
+        "y": 340,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "0cf6ba6040f94f6e",
+        "type": "function",
+        "z": "6c3aebd160ce2af5",
+        "name": "extract_moving_avg",
+        "func": "let data = msg.payload;\n\nif (data.moving_avg !== undefined) {\n    msg.payload = data.moving_avg;\n    return msg;\n}\n\nreturn null;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 660,
+        "y": 400,
+        "wires": [
+            [
+                "54a1ebfaa6dfbeb4"
+            ]
+        ]
+    },
+    {
+        "id": "4e32dc929fdc54b2",
+        "type": "mqtt in",
+        "z": "00ad5ea394b9c077",
+        "name": "HVAC Alert Status",
+        "topic": "alerts/group20/hvac-blower/status",
+        "qos": "0",
+        "datatype": "auto-detect",
+        "broker": "e5af4df9f7d80cca",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 190,
+        "y": 220,
+        "wires": [
+            [
+                "9b1e6332e3683da9"
+            ]
+        ]
+    },
+    {
+        "id": "9b1e6332e3683da9",
+        "type": "json",
+        "z": "00ad5ea394b9c077",
+        "name": "",
+        "property": "payload",
+        "action": "obj",
+        "pretty": false,
+        "x": 470,
+        "y": 220,
+        "wires": [
+            [
+                "7e0c6349b6d1ed1a",
+                "3365f96b712f5b70",
+                "5155c460989a68a1",
+                "d88a268cb3890c1b"
+            ]
+        ]
+    },
+    {
+        "id": "7e0c6349b6d1ed1a",
+        "type": "function",
+        "z": "00ad5ea394b9c077",
+        "name": "extract_status",
+        "func": "let data = msg.payload;\n\nmsg.payload = {\n    status: data.status,\n    message: data.message,\n    color: (data.status === \"ANOMALY\") ? \"red\" : \"green\"\n};\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 720,
+        "y": 320,
+        "wires": [
+            [
+                "9dd83626d7868540"
+            ]
+        ]
+    },
+    {
+        "id": "3365f96b712f5b70",
+        "type": "function",
+        "z": "00ad5ea394b9c077",
+        "name": "extract_message",
+        "func": "let data = msg.payload;\n\nif (typeof data === \"string\") {\n    data = JSON.parse(data);\n}\n\nmsg.payload = data.message;\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 730,
+        "y": 220,
+        "wires": [
+            [
+                "9d3848171ea8309b"
+            ]
+        ]
+    },
+    {
+        "id": "9d3848171ea8309b",
+        "type": "ui_text",
+        "z": "00ad5ea394b9c077",
+        "group": "6ac62dc140462e8a",
+        "order": 2,
+        "width": "6",
+        "height": "4",
+        "name": "Alert Message",
+        "label": "Alert Message",
+        "format": "{{msg.payload}}",
+        "layout": "col-center",
+        "className": "",
+        "style": false,
+        "font": "",
+        "fontSize": 16,
+        "color": "#000000",
+        "x": 1020,
+        "y": 220,
+        "wires": []
+    },
+    {
+        "id": "5155c460989a68a1",
+        "type": "debug",
+        "z": "00ad5ea394b9c077",
+        "name": "debug 3",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 680,
+        "y": 80,
+        "wires": []
+    },
+    {
+        "id": "d88a268cb3890c1b",
+        "type": "function",
+        "z": "00ad5ea394b9c077",
+        "name": "extract_device",
+        "func": "let data = msg.payload;\n\nif (typeof data === \"string\") {\n    data = JSON.parse(data);\n}\n\nmsg.payload = data.device;\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 720,
+        "y": 160,
+        "wires": [
+            [
+                "76a1bc3d6b2de8d8"
+            ]
+        ]
+    },
+    {
+        "id": "76a1bc3d6b2de8d8",
+        "type": "ui_text",
+        "z": "00ad5ea394b9c077",
+        "group": "6ac62dc140462e8a",
+        "order": 1,
+        "width": "6",
+        "height": "2",
+        "name": "",
+        "label": "Device",
+        "format": "{{msg.payload}}",
+        "layout": "col-center",
+        "className": "",
+        "style": false,
+        "font": "",
+        "fontSize": 16,
+        "color": "#000000",
+        "x": 1010,
+        "y": 140,
+        "wires": []
+    },
+    {
+        "id": "9dd83626d7868540",
+        "type": "ui_template",
+        "z": "00ad5ea394b9c077",
+        "group": "6ac62dc140462e8a",
+        "name": "fan status",
+        "order": 3,
+        "width": "6",
+        "height": "3",
+        "format": "<div style=\"\n    padding:10px;\n    border-radius:10px;\n    background-color: {{msg.payload.color}};\n    color:white;\n    font-size:20px;\n    text-align:center;\n\">\n    Fan Status: {{msg.payload.status}}\n</div>",
+        "storeOutMessages": true,
+        "fwdInMessages": true,
+        "resendOnRefresh": true,
+        "templateScope": "local",
+        "className": "",
+        "x": 1020,
+        "y": 320,
+        "wires": [
+            []
+        ]
+    }
+]
