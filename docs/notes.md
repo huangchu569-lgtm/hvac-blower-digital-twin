@@ -187,6 +187,39 @@ python-edge 启动时 InfluxDB 未就绪，短暂报连接失败，之后自动�
 Tag：v0.1-original — 原版完整复现基线
 
 ---
+## 七点五、B1 改造完成：控制与自动保护闭环
+
+### 目标
+
+从「只监控」升级为「能控制 + 自动保护」，形成感知—分析—决策—执行闭环。
+
+### 实现
+
+- 新增 MQTT 控制主题：`commands/group20/hvac-blower/control`
+- 新增模式反馈主题：`status/group20/hvac-blower/mode`
+- 三种模式：`RUN`（factor 1.0）、`SLOW`（0.5）、`STOP`（0.05）
+- 自动保护：连续 5 次 ANOMALY 自动从 RUN 切换到 SLOW
+- InfluxDB 新增字段：`mode_code`（STOP=0, RUN=1, SLOW=2）、`anomaly_streak`
+- `threading.Lock` 保护共享状态，`client.loop_start()` 启动网络线程
+- 支持纯文本命令（`-m RUN`）和 JSON（`-m '{"command":"RUN"}'`）两种格式
+
+### 关键问题与修复
+
+1. PowerShell 引号转义吃命令 → 支持纯文本命令，`-m RUN` 即可
+2. SLOW 模式下 streak 无限增长 → 只在 RUN 模式累加，其他模式强制归零
+3. `docker compose restart` 不加载新代码 → 必须 `docker compose up -d --build python-edge`
+
+### 验收结果
+
+- 手动 RUN / SLOW / STOP 切换正常，电流基线按 factor 变化
+- 自动保护触发正常，切换瞬间 streak 归零
+- 切换后 SLOW 模式 streak 稳定为 0
+- InfluxDB `mode_code`、`anomaly_streak` 字段写入正常
+- mode_code 时间线：15:16:50(SLOW) → 15:17:00(RUN) → 15:17:20(SLOW)
+
+### Tag
+
+`v0.2-control-loop`
 
 ## 八、下一步计划
 
@@ -206,6 +239,7 @@ Tag：v0.1-original — 原版完整复现基线
 
 4. B4：RUL 估算
    - 趋势分析 + 剩余可用时间预测
+
 
 ### 硬件阶段
 

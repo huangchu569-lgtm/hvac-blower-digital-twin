@@ -10,6 +10,7 @@ import signal
 import sys
 import logging
 import os
+import threading
 from datetime import datetime
 try:
     from influxdb_client import InfluxDBClient, Point, WritePrecision
@@ -41,6 +42,8 @@ def run_publisher(args):
     PORT = args.port
     DATA_TOPIC = args.data_topic
     ALERT_TOPIC = args.alert_topic
+    COMMAND_TOPIC = args.command_topic
+    MODE_TOPIC = args.mode_topic
 
     client = create_client(BROKER, PORT)
 
@@ -67,6 +70,51 @@ def run_publisher(args):
 
     logger = logging.getLogger(__name__)
 
+    # 共享状态
+    mode_lock = threading.Lock()
+    current_mode = "RUN"          # 初始模式
+    anomaly_streak = 0            # 连续异常计数
+    mode_code_map = {"STOP": 0, "RUN": 1, "SLOW": 2}
+    mode_factor = {"RUN": 1.0, "SLOW": 0.5, "STOP": 0.05}
+
+    def on_message(client, userdata, msg):
+        nonlocal current_mode, anomaly_streak
+        try:
+            raw = msg.payload.decode().strip()
+            try:
+                payload = json.loads(raw)
+                command = str(payload.get("command", "")).upper()
+            except json.JSONDecodeError:
+                # 允许纯文本命令，例如 "SLOW"
+                command = raw.upper()
+
+            if command in mode_factor:
+                with mode_lock:
+                    if command != current_mode:
+                        old = current_mode
+                        current_mode = command
+                        anomaly_streak = 0  # 手动切换重置异常计数
+                        logger.info("Command received: %s (manual)", command)
+                        logger.info("MODE CHANGE: %s (reason=manual)", command)
+                        mode_payload = {
+                            "timestamp": time.time(),
+                            "device": "fan01",
+                            "mode": current_mode,
+                            "mode_code": mode_code_map[current_mode],
+                            "reason": "manual"
+                        }
+                        client.publish(MODE_TOPIC, json.dumps(mode_payload))
+                    else:
+                        logger.info("Command received: %s (manual) - no change", command)
+            else:
+                logger.warning("Unknown command: %s", command)
+        except Exception:
+            logger.exception("Invalid command message")
+
+    client.on_message = on_message
+    client.subscribe(COMMAND_TOPIC)
+    client.loop_start()
+
     def _signal_handler(sig, frame):
         nonlocal stop_requested
         logger.info("Shutdown requested")
@@ -78,17 +126,24 @@ def run_publisher(args):
     while not stop_requested and (args.iterations is None or t < args.iterations):
         cycle_t = t % args.cycle_length
 
-        base = 3.0 + 0.3 * math.sin(cycle_t / 10)
+        # 读取当前模式
+        with mode_lock:
+            mode = current_mode
+            streak = anomaly_streak
+
+        factor = mode_factor.get(mode, 1.0)
+
+        base = (3.0 + 0.3 * math.sin(cycle_t / 10)) * factor
         noise = random.uniform(-0.1, 0.1)
-        drift = 0.001 * cycle_t
+        drift = 0.001 * cycle_t * factor
 
         current = base + noise + drift
 
         if random.random() < 0.05:
-            current += random.uniform(0.8, 1.5)
+            current += random.uniform(0.8, 1.5) * factor
 
         if 80 < cycle_t < 110:
-            current += 1.0
+            current += 1.0 * factor
 
         history.append(current)
         if len(history) > 5:
@@ -102,9 +157,35 @@ def run_publisher(args):
         if prediction[0] == 1:
             status = "NORMAL"
             message = "Fan operating normally"
+            with mode_lock:
+                anomaly_streak = 0
         else:
             status = "ANOMALY"
             message = "Anomalous blower fan behavior detected"
+            with mode_lock:
+                if current_mode == "RUN":
+                    anomaly_streak += 1
+                    if anomaly_streak >= args.auto_protect_threshold:
+                        old = current_mode
+                        current_mode = "SLOW"
+                        anomaly_streak = 0
+                        logger.warning("AUTO-PROTECTION triggered: switching from %s to %s", old, current_mode)
+                        mode_payload = {
+                            "timestamp": time.time(),
+                            "device": "fan01",
+                            "mode": current_mode,
+                            "mode_code": mode_code_map[current_mode],
+                            "reason": "auto-protection"
+                        }
+                        client.publish(MODE_TOPIC, json.dumps(mode_payload))
+                else:
+                    # 非 RUN 模式下不累积 streak，避免无意义增长
+                    anomaly_streak = 0
+
+        # 再次读取最新状态用于写入 InfluxDB
+        with mode_lock:
+            mode = current_mode
+            streak = anomaly_streak
 
         sensor_payload = {
             "timestamp": time.time(),
@@ -131,6 +212,8 @@ def run_publisher(args):
                     .tag("device", sensor_payload["device"]) \
                     .field("current", float(sensor_payload["current"])) \
                     .field("moving_avg", float(sensor_payload["moving_avg"])) \
+                    .field("mode_code", mode_code_map[mode]) \
+                    .field("anomaly_streak", streak) \
                     .time(datetime.utcfromtimestamp(sensor_payload["timestamp"]), WritePrecision.S)
                 write_api.write(bucket=INFLUX_BUCKET, org=INFLUX_ORG, record=p)
             except Exception:
@@ -138,10 +221,17 @@ def run_publisher(args):
 
         logger.info("DATA : %s", sensor_payload)
         logger.info("ALERT: %s", alert_payload)
+        logger.info("MODE : %s (code=%s) streak=%s", mode, mode_code_map[mode], streak)
         logger.info("%s", "-" * 50)
 
         t += 1
         time.sleep(args.interval)
+
+    # 清理
+    client.loop_stop()
+    client.disconnect()
+    if influx_client:
+        influx_client.close()
 
 
 def main():
@@ -150,10 +240,13 @@ def main():
     parser.add_argument("--port", type=int, default=int(os.getenv("MQTT_BROKER_PORT", "1883")), help="MQTT broker port")
     parser.add_argument("--data-topic", default="sensors/group20/hvac-blower/data")
     parser.add_argument("--alert-topic", default="alerts/group20/hvac-blower/status")
+    parser.add_argument("--command-topic", default="commands/group20/hvac-blower/control")
+    parser.add_argument("--mode-topic", default="status/group20/hvac-blower/mode")
     parser.add_argument("--model-path", default="fan_anomaly_model.pkl")
     parser.add_argument("--interval", type=float, default=2.0, help="Publish interval (s)")
     parser.add_argument("--iterations", type=int, default=None, help="Number of iterations to run (for testing)")
     parser.add_argument("--cycle-length", type=int, default=180, help="Simulation cycle length before drift resets")
+    parser.add_argument("--auto-protect-threshold", type=int, default=5, help="Consecutive ANOMALY count to trigger auto-protection")
     parser.add_argument("--log-level", default="INFO", help="Logging level (DEBUG, INFO, WARNING, ERROR)")
     args = parser.parse_args()
 
@@ -165,7 +258,6 @@ def main():
         logging.getLogger(__name__).exception("Publisher exited with error")
         sys.exit(1)
     finally:
-        # ensure influx client closed if present
         try:
             if 'influx_client' in globals() and influx_client:
                 influx_client.close()
